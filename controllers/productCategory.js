@@ -14,7 +14,7 @@ const updateProductCategory = asyncHandler(async (req, res) => {
     const response = await ProductCategory.findByIdAndUpdate(pcid, req.body, { new: true })
     return res.status(200).json({
         success: response ? true : false,
-        createProductCategory: response ? response : "Cannot update category of product"
+        updateProductCategory: response ? response : "Cannot update category of product"
     })
 })
 
@@ -23,7 +23,7 @@ const deleteProductCategory = asyncHandler(async (req, res) => {
     const response = await ProductCategory.findByIdAndDelete(pcid)
     return res.status(200).json({
         success: response ? true : false,
-        createProductCategory: response ? response : "Cannot delete category of product"
+        deleteProductCategory: response ? response : "Cannot delete category of product"
     })
 })
 
@@ -31,7 +31,7 @@ const getProductCategory = asyncHandler(async (req, res) => {
     const response = await ProductCategory.find().select('title _id')
     return res.status(200).json({
         success: response ? true : false,
-        createProductCategory: response ? response : "Cannot get category of product"
+        getProductCategory: response ? response : "Cannot get category of product"
     })
 })
 
