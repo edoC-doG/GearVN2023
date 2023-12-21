@@ -175,10 +175,10 @@ const updateUserByAdmin = asyncHandler(async (req, res) => {
     })
 })
 
-const updateUserAdd = asyncHandler(async (req, res) => {
-    const { _id } = req.user
-    if ()
-})
+// const updateUserAdd = asyncHandler(async (req, res) => {
+//     const { _id } = req.user
+//     if ()
+// })
 module.exports = {
     register,
     login,
