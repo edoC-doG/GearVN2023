@@ -14,6 +14,7 @@ router.get('/', [verifyAccessToken, isAdmin], ctrls.getUsers)
 router.get('/current', verifyAccessToken, ctrls.getCurrentUser)
 router.put('/current', [verifyAccessToken], ctrls.updateUser)
 router.put('/address', [verifyAccessToken], ctrls.updateUserAdd)
+router.put('/cart', [verifyAccessToken], ctrls.updateCartAdd)
 router.put('/:uid', [verifyAccessToken, isAdmin], ctrls.updateUserByAdmin)
 
 
