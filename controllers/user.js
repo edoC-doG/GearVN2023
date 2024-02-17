@@ -4,7 +4,6 @@ const { generateAccessToken, generateRefreshToken } = require('../middlewares/jw
 const jwt = require('jsonwebtoken')
 const sendMail = require('../utils/sendMail')
 const crypto = require('crypto');
-const { json } = require('express');
 
 
 const register = asyncHandler(async (req, res) => {
@@ -175,10 +174,30 @@ const updateUserByAdmin = asyncHandler(async (req, res) => {
     })
 })
 
-// const updateUserAdd = asyncHandler(async (req, res) => {
-//     const { _id } = req.user
-//     if ()
-// })
+const updateUserAdd = asyncHandler(async (req, res) => {
+    const { _id } = req.user
+    if (!req.body.address) throw new Error('Missing Inputs')
+    const response = await User.findByIdAndUpdate(_id, { $push: { address: req.body.address } }, { new: true }).select('-password -role -refreshToken')
+    return res.status(200).json(
+        {
+            success: response ? true : false,
+            updatedUser: response ? response : "Some thing went wrongs !!!"
+        }
+    )
+})
+
+const updateCartAdd = asyncHandler(async (req, res) => {
+    const { _id } = req.user
+    const { pid, quantity, color } = req.body
+    if (!req.body.address) throw new Error('Missing Inputs')
+    const response = await User.findByIdAndUpdate(_id, { $push: { address: req.body.address } }, { new: true }).select('-password -role -refreshToken')
+    return res.status(200).json(
+        {
+            success: response ? true : false,
+            updatedUser: response ? response : "Some thing went wrongs !!!"
+        }
+    )
+})
 module.exports = {
     register,
     login,
@@ -190,5 +209,7 @@ module.exports = {
     getUsers,
     deleteUser,
     updateUser,
-    updateUserByAdmin
+    updateUserByAdmin,
+    updateUserAdd,
+    updateCartAdd
 }

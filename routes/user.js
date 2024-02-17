@@ -8,13 +8,13 @@ router.post('/refreshToken', ctrls.refreshAccessToken);
 router.get('/logout', ctrls.logout);
 router.get('/forgotPassword', ctrls.forgotPassword);
 router.put('/resetPassword', ctrls.resetPwd);
-
-//Route For Admin
-router.get('/', [verifyAccessToken, isAdmin], ctrls.getUsers)
-router.put('/:uid', [verifyAccessToken, isAdmin], ctrls.updateUserByAdmin)
 router.delete('/', [verifyAccessToken, isAdmin], ctrls.deleteUser)
-
-router.get('/current', verifyAccessToken, ctrls.getCurrentUser);
+router.get('/', [verifyAccessToken, isAdmin], ctrls.getUsers)
+//Route For Admin
+router.get('/current', verifyAccessToken, ctrls.getCurrentUser)
 router.put('/current', [verifyAccessToken], ctrls.updateUser)
+router.put('/address', [verifyAccessToken], ctrls.updateUserAdd)
+router.put('/:uid', [verifyAccessToken, isAdmin], ctrls.updateUserByAdmin)
 
-module.exports = router;
+
+module.exports = router;    
