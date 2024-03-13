@@ -3,10 +3,11 @@ const ctrls = require('../controllers/user')
 const { verifyAccessToken, isAdmin } = require('../middlewares/verifyToken')
 
 router.post('/register', ctrls.register);
+router.get('/final-register/:token', ctrls.finalRegister);
 router.post('/login', ctrls.login);
 router.post('/refreshToken', ctrls.refreshAccessToken);
 router.get('/logout', ctrls.logout);
-router.get('/forgotPassword', ctrls.forgotPassword);
+router.post('/forgotPassword', ctrls.forgotPassword);
 router.put('/resetPassword', ctrls.resetPwd);
 router.delete('/', [verifyAccessToken, isAdmin], ctrls.deleteUser)
 router.get('/', [verifyAccessToken, isAdmin], ctrls.getUsers)

@@ -4,8 +4,26 @@ const { generateAccessToken, generateRefreshToken } = require('../middlewares/jw
 const jwt = require('jsonwebtoken')
 const sendMail = require('../utils/sendMail')
 const crypto = require('crypto');
+const makeToken = require('uniqid')
 
-
+// const register = asyncHandler(async (req, res) => {
+//     const { email, password, firstName, lastName, mobile } = req.body
+//     if (!email || !password || !firstName || !lastName || !mobile)
+//         return res.status(400).json({
+//             success: false,
+//             mes: "Missing Input "
+//         })
+//     const user = await User.findOne({ email })
+//     if (user) {
+//         throw new Error("User has existed")
+//     } else {
+//         const newUser = await User.create(req.body)
+//         return res.status(200).json({
+//             success: newUser ? true : false,
+//             mes: newUser ? 'Register is successfully, Please go login' : 'Something went wrong'
+//         })
+//     }
+// });
 const register = asyncHandler(async (req, res) => {
     const { email, password, firstName, lastName, mobile } = req.body
     if (!email || !password || !firstName || !lastName || !mobile)
@@ -17,13 +35,34 @@ const register = asyncHandler(async (req, res) => {
     if (user) {
         throw new Error("User has existed")
     } else {
-        const newUser = await User.create(req.body)
-        return res.status(200).json({
-            success: newUser ? true : false,
-            mes: newUser ? 'Register is successfully, Please go login' : 'Something went wrong'
+        const token = makeToken()
+        res.cookie('dataRegister', { ...req.body, token }, { httpOnly: true, maxAge: 15 * 60 * 1000 })
+        const html = `Please clink on here to change register your account (This link will expire after 15 minutes ). !!! <a href=${process.env.URL_SERVER}/api/user/final-register/${token}>Click here</a>`
+        await sendMail({ email, html, subject: 'Complete Register Account' })
+        return res.json({
+            success: true,
+            mes: 'Please check your email to active account'
         })
     }
-});
+})
+
+const finalRegister = asyncHandler(async (req, res) => {
+    const cookie = req.cookies
+    const { token } = req.params
+    if (!cookie || cookie?.dataRegister?.token !== token) {
+        res.clearCookie('dataRegister')
+        return res.redirect(`${process.env.CLIENT_URL}/final-register/failed`)
+    }
+    const newUser = await User.create({
+        email: cookie?.dataRegister?.email,
+        password: cookie?.dataRegister?.password,
+        mobile: cookie?.dataRegister?.mobile,
+        firstName: cookie?.dataRegister?.firstName,
+        lastName: cookie?.dataRegister?.lastName
+    })
+    if (newUser) return res.redirect(`${process.env.CLIENT_URL}/final-register/success`)
+    else return res.redirect(`${process.env.CLIENT_URL}/final-register/failed`)
+})
 
 const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body
@@ -100,17 +139,18 @@ const logout = asyncHandler(async (req, res) => {
 //Check token same with token sended by server
 
 const forgotPassword = asyncHandler(async (req, res) => {
-    const { email } = req.query
+    const { email } = req.body
     if (!email) throw new Error('Missing email')
     const user = await User.findOne({ email })
     if (!user) throw new Error('User not found')
     const resetToken = user.createPasswordChangedToken()
     await user.save()
     // Send Mail
-    const html = `Please clink on here to change for your password (This link will expire after 15 minutes ). !!! <a href=${process.env.URL_SERVER}/api/user/reset-password/${resetToken}>Click here</a>`
+    const html = `Please clink on here to change for your password (This link will expire after 15 minutes ). !!! <a href=${process.env.CLIENT_URL}/reset-password/${resetToken}>Click here</a>`
     const data = {
         email,
-        html
+        html,
+        subject: 'Forgot Password'
     }
     const rs = await sendMail(data)
     return res.status(200).json({
@@ -222,6 +262,7 @@ const updateCartAdd = asyncHandler(async (req, res) => {
 })
 module.exports = {
     register,
+    finalRegister,
     login,
     getCurrentUser,
     refreshAccessToken,
