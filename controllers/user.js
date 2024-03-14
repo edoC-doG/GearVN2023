@@ -154,8 +154,8 @@ const forgotPassword = asyncHandler(async (req, res) => {
     }
     const rs = await sendMail(data)
     return res.status(200).json({
-        success: true,
-        rs
+        success: rs.response?.includes('OK') ? true : false,
+        mes: rs.response?.includes('OK') ? 'Please check your email !!!' : 'Some thing went wrong, please try again !!!'
     })
 })
 
