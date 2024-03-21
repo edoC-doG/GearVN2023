@@ -33,12 +33,20 @@ const getProducts = asyncHandler(async (req, res) => {
     // Format lai cac operator cho dung cu phap cua MongoDB
     let queryString = JSON.stringify(queries)
     queryString = queryString.replace(/\b(gte|gt|lt|gte)\b/g, el => `$${el}`)
-    const formatQueries = JSON.parse(queryString)
+    let formatQueries = JSON.parse(queryString)
+    let colorQueryObj = {}
 
     //Filtering
     if (queries?.title) formatQueries.title = { $regex: queries.title, $options: 'i' }
     if (queries?.category) formatQueries.category = { $regex: queries.category, $options: 'i' }
-    let queryCommand = Product.find(formatQueries)
+    if (queries?.color) {
+        delete formatQueries.color
+        const colorArr = queries.color?.split(',')
+        const colorQuery = colorArr.map(el => ({ color: { $regex: el, $options: 'i' } }))
+        colorQueryObj = { $or: colorQuery }
+    }
+    const q = { ...colorQueryObj, ...formatQueries }
+    let queryCommand = Product.find(q)
 
     //Sorting
     if (req.query.sort) {
@@ -64,7 +72,7 @@ const getProducts = asyncHandler(async (req, res) => {
     // So luong san pham thoa man dieu kien !== so luong san pham tra ve 1 lan goi API
     queryCommand.exec(async (err, response) => {
         if (err) throw new Error(err.message)
-        const counts = await Product.find(formatQueries).countDocuments()
+        const counts = await Product.find(q).countDocuments()
         return res.status(200).json({
             success: response ? true : false,
             counts,
