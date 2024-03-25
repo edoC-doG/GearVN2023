@@ -15,7 +15,13 @@ const createProduct = asyncHandler(async (req, res) => {
 
 const getProduct = asyncHandler(async (req, res) => {
     const { pid } = req.params;
-    const product = await Product.findById(pid)
+    const product = await Product.findById(pid).populate({
+        path: 'ratings',
+        populate: {
+            path: 'postedBy',
+            select: 'firstName lastName avatar'
+        }
+    })
     return res.status(200).json({
         success: product ? true : false,
         productData: product ? product : "Cannot get product"
@@ -104,7 +110,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
 const ratings = asyncHandler(async (req, res) => {
     const { _id } = req.user
-    const { star, comment, pid } = req.body
+    const { star, comment, pid, updatedAt } = req.body
     if (!star || !pid) throw new Error('Missing Inputs')
     const ratingProduct = await Product.findById(pid)
     const alreadyRating = ratingProduct?.ratings?.find(el => el.postedBy.toString() === _id)
@@ -112,13 +118,13 @@ const ratings = asyncHandler(async (req, res) => {
         await Product.updateOne({
             ratings: { $elemMatch: alreadyRating }
         }, {
-            $set: { "ratings.$.star": star, "ratings.$.comment": comment }
+            $set: { "ratings.$.star": star, "ratings.$.comment": comment, "ratings.$.updatedAt": updatedAt }
         }, { new: true })
         //Update star & comment
     } else {
         // add star & comment
         await Product.findByIdAndUpdate(pid, {
-            $push: { ratings: { star, comment, postedBy: _id } }
+            $push: { ratings: { star, comment, postedBy: _id, updatedAt } }
         }, { new: true })
 
     }

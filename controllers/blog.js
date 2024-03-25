@@ -21,7 +21,8 @@ const updateBlog = asyncHandler(async (req, res) => {
     })
 })
 const getBlog = asyncHandler(async (req, res) => {
-    const response = await Blog.find()
+    const { bid } = req.params
+    const response = await Blog.findByIdAndUpdate(bid, { $inc: { numberViews: 1 } }, { new: true }).populate('likes', 'firstName lastName').populate('dislikes', 'firstName lastName')
     return res.status(200).json({
         success: response ? true : false,
         getBlog: response ? response : 'Cannot get a blog'
