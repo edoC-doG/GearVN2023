@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken')
 const sendMail = require('../utils/sendMail')
 const crypto = require('crypto');
 const makeToken = require('uniqid')
+const { users } = require('../utils/mockDataUser')
 
 // const register = asyncHandler(async (req, res) => {
 //     const { email, password, firstName, lastName, mobile } = req.body
@@ -195,11 +196,47 @@ const resetPwd = asyncHandler(async (req, res) => {
 })
 
 const getUsers = asyncHandler(async (req, res) => {
-    const response = await User.find().select('-refreshToken -role -password')
-    return res.status(200).json({
-        success: response ? true : false,
-        user: response
+    const queries = { ...req.query }
+    const excludeFields = ['limit', 'sort', 'page', 'fields']
+    excludeFields.forEach(el => delete queries[el])
+
+    let queryString = JSON.stringify(queries)
+    queryString = queryString.replace(/\b(gte|gt|lt|gte)\b/g, el => `$${el}`)
+    let formatQueries = JSON.parse(queryString)
+
+    if (queries?.name) formatQueries.name = { $regex: queries.name, $options: 'i' }
+    let queryCommand = User.find(formatQueries)
+
+    if (req.query.sort) {
+        const sortBy = req.query.sort.split('').join(' ')
+        queryCommand = queryCommand.sort(sortBy)
+    }
+
+    if (req.query.fields) {
+        const fields = req.query.fields.split(',').join(' ')
+        queryCommand = queryCommand.select(fields)
+    }
+
+    const page = +req.query.page || 1
+    const limit = +req.query.limit || process.env.LIMIT_PRODUCTS
+    const skip = (page - 1) * limit
+    queryCommand.skip(skip).limit(limit)
+
+    queryCommand.then(async (response) => {
+        const counts = await User.find(formatQueries).countDocuments()
+        return res.status(200).json({
+            success: response ? true : false,
+            counts,
+            users: response ? response : "Cannot get user",
+        })
+    }).catch((err) => {
+        if (err) throw new Error(err.message)
     })
+    // const response = await User.find().select('-refreshToken -role -password')
+    // return res.status(200).json({
+    //     success: response ? true : false,
+    //     user: response
+    // })
 })
 
 const deleteUser = asyncHandler(async (req, res) => {
@@ -278,6 +315,14 @@ const updateCartAdd = asyncHandler(async (req, res) => {
         )
     }
 })
+
+const insertUsers = asyncHandler(async (req, res) => {
+    const response = await User.create(users)
+    return res.status(200).json({
+        success: response ? true : false,
+        users: response ? response : 'Wrong'
+    })
+})
 module.exports = {
     register,
     finalRegister,
@@ -292,5 +337,6 @@ module.exports = {
     updateUser,
     updateUserByAdmin,
     updateUserAdd,
-    updateCartAdd
+    updateCartAdd,
+    insertUsers
 }
