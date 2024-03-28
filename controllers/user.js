@@ -198,13 +198,25 @@ const resetPwd = asyncHandler(async (req, res) => {
 const getUsers = asyncHandler(async (req, res) => {
     const queries = { ...req.query }
     const excludeFields = ['limit', 'sort', 'page', 'fields']
+
     excludeFields.forEach(el => delete queries[el])
 
     let queryString = JSON.stringify(queries)
     queryString = queryString.replace(/\b(gte|gt|lt|gte)\b/g, el => `$${el}`)
+
     let formatQueries = JSON.parse(queryString)
 
     if (queries?.name) formatQueries.name = { $regex: queries.name, $options: 'i' }
+    if (req.query.q) {
+        delete formatQueries.q
+        formatQueries['$or'] = [
+            { firstName: { $regex: req.query.q, $options: 'i' } },
+            { lastName: { $regex: req.query.q, $options: 'i' } },
+            { email: { $regex: req.query.q, $options: 'i' } },
+            { mobile: { $regex: req.query.q, $options: 'i' } },
+        ]
+    }
+
     let queryCommand = User.find(formatQueries)
 
     if (req.query.sort) {
@@ -223,7 +235,7 @@ const getUsers = asyncHandler(async (req, res) => {
     queryCommand.skip(skip).limit(limit)
 
     queryCommand.then(async (response) => {
-        const counts = await User.find(formatQueries).countDocuments()
+        const counts = await User.find(formatQueries).select('-refreshToken -role -password').countDocuments()
         return res.status(200).json({
             success: response ? true : false,
             counts,
