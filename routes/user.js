@@ -10,7 +10,7 @@ router.post('/refreshToken', ctrls.refreshAccessToken);
 router.get('/logout', ctrls.logout);
 router.post('/forgotPassword', ctrls.forgotPassword);
 router.put('/resetPassword', ctrls.resetPwd);
-router.delete('/', [verifyAccessToken, isAdmin], ctrls.deleteUser)
+router.delete('/:uid', [verifyAccessToken, isAdmin], ctrls.deleteUser)
 router.get('/', [verifyAccessToken, isAdmin], ctrls.getUsers)
 //Route For Admin
 router.get('/current', verifyAccessToken, ctrls.getCurrentUser)
