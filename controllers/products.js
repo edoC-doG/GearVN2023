@@ -52,7 +52,6 @@ const getProducts = asyncHandler(async (req, res) => {
         colorQueryObj = { $or: colorQuery };
     }
     const q = { ...colorQueryObj, ...formatQueries }
-    console.log(q)
     let queryCommand = Product.find(q)
 
 
