@@ -38,25 +38,27 @@ const getProducts = asyncHandler(async (req, res) => {
 
     // Format lai cac operator cho dung cu phap cua MongoDB
     let queryString = JSON.stringify(queries)
-    queryString = queryString.replace(/\b(gte|gt|lt|gte)\b/g, el => `$${el}`)
-    let formatQueries = JSON.parse(queryString)
+    queryString = queryString.replace(/\b(gte|gt|lt|lte)\b/g, matchedEl => `$${matchedEl}`)
+    const formatQueries = JSON.parse(queryString)
     let colorQueryObj = {}
 
     //Filtering
     if (queries?.title) formatQueries.title = { $regex: queries.title, $options: 'i' }
     if (queries?.category) formatQueries.category = { $regex: queries.category, $options: 'i' }
     if (queries?.color) {
-        delete formatQueries.color
-        const colorArr = queries.color?.split(',')
-        const colorQuery = colorArr.map(el => ({ color: { $regex: el, $options: 'i' } }))
-        colorQueryObj = { $or: colorQuery }
+        delete formatQueries.color;
+        const colorArr = queries.color?.split(',');
+        const colorQuery = colorArr.map(el => ({ color: { $regex: el, $options: 'i' } }));
+        colorQueryObj = { $or: colorQuery };
     }
     const q = { ...colorQueryObj, ...formatQueries }
+    console.log(q)
     let queryCommand = Product.find(q)
+
 
     //Sorting
     if (req.query.sort) {
-        const sortBy = req.query.sort.split('').join(' ')
+        const sortBy = req.query.sort.split(',').join(' ')
         queryCommand = queryCommand.sort(sortBy)
     }
     // Fields limiting
@@ -76,14 +78,15 @@ const getProducts = asyncHandler(async (req, res) => {
     queryCommand.skip(skip).limit(limit)
     //Execute query
     // So luong san pham thoa man dieu kien !== so luong san pham tra ve 1 lan goi API
-    queryCommand.exec(async (err, response) => {
-        if (err) throw new Error(err.message)
+    queryCommand.then(async (response) => {
         const counts = await Product.find(q).countDocuments()
         return res.status(200).json({
             success: response ? true : false,
             counts,
             products: response ? response : "Cannot get products",
         })
+    }).catch((err) => {
+        if (err) throw new Error(err.message)
     })
 })
 
