@@ -14,7 +14,7 @@ const createProduct = asyncHandler(async (req, res) => {
     const newProduct = await Product.create(req.body)
     return res.status(200).json({
         success: newProduct ? true : false,
-        createProduct: newProduct ? newProduct : "Cannot create new product"
+        mes: newProduct ? "Created product successfully !!!" : "Cannot create new product. Try again !!!"
     })
 })
 
@@ -117,7 +117,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
 const ratings = asyncHandler(async (req, res) => {
     const { _id } = req.user
-    const { star, comment, pid, updatedAt } = req.body
+    const { star, comment, pid, updatedAt } = req.query
     if (!star || !pid) throw new Error('Missing Inputs')
     const ratingProduct = await Product.findById(pid)
     const alreadyRating = ratingProduct?.ratings?.find(el => el.postedBy.toString() === _id)
