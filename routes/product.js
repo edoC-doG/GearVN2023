@@ -12,7 +12,7 @@ router.get('/', ctrls.getProducts)
 
 
 router.delete('/:pid', [verifyAccessToken, isAdmin], ctrls.deleteProduct)
-router.put('/:pid', [verifyAccessToken, isAdmin], uploader.fields([
+router.put('/:pid', verifyAccessToken, isAdmin, uploader.fields([
     { name: 'images', maxCount: 10 },
     { name: 'thumb', maxCount: 1 }
 ]), ctrls.updateProduct)

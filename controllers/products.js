@@ -110,18 +110,13 @@ const updateProduct = asyncHandler(async (req, res) => {
     const { pid } = req.params;
     const files = req?.files
 
-    if (files?.thumb) {
-        req.body.thumb = files?.thumb[0]?.path
-    }
-    if (files?.thumb) {
-        req.body.images == files?.images?.map(el => el.path)
-    }
-    if (Object.keys(req.body).length === 0) throw new Error('Missing inputs')
+    if (files?.thumb) req.body.thumb = files?.thumb[0]?.path
+    if (files?.images) req.body.images = files?.images?.map(el => el.path)
     if (req.body && req.body.title) req.body.slug = slugify(req.body.title)
     const updateProduct = await Product.findByIdAndUpdate(pid, req.body, { new: true })
     return res.status(200).json({
         success: updateProduct ? true : false,
-        updateProduct: updateProduct ? updateProduct : "Cannot update product"
+        mes: updateProduct ? "Updated Product" : "Cannot update product"
     })
 })
 
@@ -131,7 +126,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
     const deleteProduct = await Product.findByIdAndDelete(pid)
     return res.status(200).json({
         success: deleteProduct ? true : false,
-        updateProduct: deleteProduct ? "Deleted Product" : "Cannot delete product"
+        mes: deleteProduct ? "Deleted Product" : "Cannot delete product"
     })
 })
 
