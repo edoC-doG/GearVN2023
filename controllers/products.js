@@ -2,6 +2,7 @@ const Product = require('../models/products');
 const asyncHandler = require('express-async-handler');
 const slugify = require('slugify');
 const { options } = require('../routes/product');
+const makeSUK = require('uniqid')
 
 const createProduct = asyncHandler(async (req, res) => {
     const { title, price, description, brand, category, color } = req.body
@@ -130,6 +131,26 @@ const deleteProduct = asyncHandler(async (req, res) => {
     })
 })
 
+const addVariants = asyncHandler(async (req, res) => {
+    const { pid } = req.params
+    const { title, price, color } = req.body
+    const thumb = req?.files?.thumb[0]?.path
+    const images = req?.files?.images?.map(el => el.path)
+    if (!(title && price && color)) throw new Error('Missing inputs')
+    req.body.slug = slugify(title)
+    if (thumb) req.body.thumb = thumb
+    if (images) req.body.images = images
+    const response = await Product.findByIdAndUpdate(pid, {
+        $push: {
+            variants: { color, price, title, thumb, images, sku: makeSUK().toUpperCase() }
+        }
+    }, { new: true })
+    return res.status(200).json({
+        success: response ? true : false,
+        mes: response ? "Created variant product successfully !!!" : "Cannot create variant new product. Try again !!!"
+    })
+})
+
 const ratings = asyncHandler(async (req, res) => {
     const { _id } = req.user
     const { star, comment, pid, updatedAt } = req.query
@@ -181,5 +202,6 @@ module.exports = {
     updateProduct,
     deleteProduct,
     ratings,
+    addVariants,
     uploadImageProd
 }
