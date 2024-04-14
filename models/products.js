@@ -70,7 +70,9 @@ var productSchema = new mongoose.Schema({
             thumb: String,
             images: Array,
             title: String,
-            sku: String
+            sku: String,
+            sold: Number,
+            quantity: Number,
         }
     ]
 }, {

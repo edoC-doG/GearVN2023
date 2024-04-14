@@ -133,7 +133,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
 const addVariants = asyncHandler(async (req, res) => {
     const { pid } = req.params
-    const { title, price, color } = req.body
+    const { title, price, color, quantity } = req.body
     const thumb = req?.files?.thumb[0]?.path
     const images = req?.files?.images?.map(el => el.path)
     if (!(title && price && color)) throw new Error('Missing inputs')
@@ -142,7 +142,7 @@ const addVariants = asyncHandler(async (req, res) => {
     if (images) req.body.images = images
     const response = await Product.findByIdAndUpdate(pid, {
         $push: {
-            variants: { color, price, title, thumb, images, sku: makeSUK().toUpperCase() }
+            variants: { color, price, title, thumb, images, quantity, sku: makeSUK().toUpperCase() }
         }
     }, { new: true })
     return res.status(200).json({
@@ -182,7 +182,7 @@ const ratings = asyncHandler(async (req, res) => {
     await updateProduct.save()
 
     return res.status(200).json({
-        status: true,
+        success: true,
     })
 })
 
@@ -191,7 +191,7 @@ const uploadImageProd = asyncHandler(async (req, res) => {
     if (!req.files) throw new Error('Missing input')
     const response = await Product.findByIdAndUpdate(pid, { $push: { images: { $each: req.files.map(el => el.path) } } }, { new: true })
     return res.status(200).json({
-        status: response ? true : false,
+        success: response ? true : false,
         updatedProduct: response ? response : "Cannot Upload Images"
     })
 })
