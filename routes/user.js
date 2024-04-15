@@ -14,11 +14,11 @@ router.post('/forgotPassword', ctrls.forgotPassword);
 router.put('/resetPassword', ctrls.resetPwd);
 
 //Route For Admin
+router.delete('/remove-cart/:pid', verifyAccessToken, ctrls.removeProductCart)
 router.get('/current', verifyAccessToken, ctrls.getCurrentUser)
 router.put('/current', verifyAccessToken, uploader.single('avatar'), ctrls.updateUser)
 router.put('/address', [verifyAccessToken], ctrls.updateUserAdd)
 router.put('/cart', verifyAccessToken, ctrls.updateCartAdd)
-router.delete('/remove-cart', verifyAccessToken, ctrls.removeProductCart)
 router.delete('/:uid', [verifyAccessToken, isAdmin], ctrls.deleteUser)
 router.get('/', [verifyAccessToken, isAdmin], ctrls.getUsers)
 router.put('/:uid', [verifyAccessToken, isAdmin], ctrls.updateUserByAdmin)

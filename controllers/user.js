@@ -114,7 +114,13 @@ const login = asyncHandler(async (req, res) => {
 
 const getCurrentUser = asyncHandler(async (req, res) => {
     const { _id } = req.user
-    const user = await User.findById(_id).select('-refreshToken -password')
+    const user = await User.findById(_id).select('-refreshToken -password').populate({
+        path: 'cart',
+        populate: {
+            path: 'product',
+            select: 'title thumb price'
+        }
+    })
     return res.status(200).json({
         success: user ? true : false,
         rs: user ? user : "User not found !!!"
@@ -298,7 +304,6 @@ const updateUserAdd = asyncHandler(async (req, res) => {
 const updateCartAdd = asyncHandler(async (req, res) => {
     const { _id } = req.user
     const { pid, quantity = 1, color } = req.body
-    console.log(req.body)
     if (!pid || !color) throw new Error('Missing Inputs')
     const user = await User.findById(_id).select('cart')
     const alreadyProduct = user?.cart?.find(el => el.product.toString() === pid)
@@ -334,7 +339,7 @@ const removeProductCart = asyncHandler(async (req, res) => {
             }
         )
     }
-    const response = await User.findByIdAndUpdate(_id, { $push: { cart: { product: pid } } }, { new: true })
+    const response = await User.findByIdAndUpdate(_id, { $pull: { cart: { product: pid } } }, { new: true })
     return res.status(200).json(
         {
             success: response ? true : false,
