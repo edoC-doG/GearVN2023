@@ -36,7 +36,10 @@ var userSchema = new mongoose.Schema({
     cart: [{
         product: { type: mongoose.Types.ObjectId, ref: 'Product' },
         quantity: Number,
-        color: String
+        color: String,
+        price: Number,
+        thumbNail: String,
+        title: String
     }],
     address: String,
     wishList: [{ type: mongoose.Types.ObjectId, ref: 'Product' }],
