@@ -5,13 +5,16 @@ var orderSchema = new mongoose.Schema({
     products: [{
         product: {
             type: mongoose.Types.ObjectId, ref: 'Product',
-            count: Number,
-            color: String
+            quantity: Number,
+            color: String,
+            price: Number,
+            thumbNail: String,
+            title: String
         }
     }],
     status: {
         type: String,
-        default: 'Processing',
+        default: 'Cancelled',
         enum: ['Cancelled', 'Processing', 'Success']
     },
     total: Number,
