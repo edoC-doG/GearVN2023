@@ -5,12 +5,12 @@ var orderSchema = new mongoose.Schema({
     products: [{
         product: {
             type: mongoose.Types.ObjectId, ref: 'Product',
-            quantity: Number,
-            color: String,
-            price: Number,
-            thumbNail: String,
-            title: String
-        }
+        },
+        quantity: Number,
+        color: String,
+        price: Number,
+        thumbNail: String,
+        title: String
     }],
     status: {
         type: String,
@@ -26,6 +26,8 @@ var orderSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: 'User'
     },
+}, {
+    timestamps: true
 });
 
 //Export the model

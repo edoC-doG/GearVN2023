@@ -10,7 +10,7 @@ const createOrderNew = asyncHandler(async (req, res) => {
     if (address) {
         await User.findByIdAndUpdate(_id, { address, cart: [] })
     }
-    const data = { products, total, postedBy: _id }
+    const data = { products, total, orderBy: _id }
     if (status) data.status = status
     const rs = await Order.create(data)
     return res.status(200).json({
@@ -32,6 +32,7 @@ const updateStatusOrder = asyncHandler(async (req, res) => {
 
 const getUserOrder = asyncHandler(async (req, res) => {
     const queries = { ...req.query }
+    const { _id } = req.user
     const excludeFields = ['limit', 'sort', 'page', 'fields']
     excludeFields.forEach(el => delete queries[el])
     let queryString = JSON.stringify(queries)
@@ -58,37 +59,25 @@ const getUserOrder = asyncHandler(async (req, res) => {
     //         ]
     //     }
     // }
-
     const qr = {
         // ...colorQueryObj,
         ...formatQueries,
+        orderBy: _id,
         // ...queryObject
     }
     let queryCommand = Order.find(qr)
-
-
-    //Sorting
     if (req.query.sort) {
         const sortBy = req.query.sort.split(',').join(' ')
         queryCommand = queryCommand.sort(sortBy)
     }
-    // Fields limiting
-
     if (req.query.fields) {
         const fields = req.query.fields.split(',').join(' ')
         queryCommand = queryCommand.select(fields)
     }
-
-    //Pagination
-    // + limit: Số object lấy về 1 gọi API
-    // Skip: 2
-    // 1 2 /3 ... 10
     const page = +req.query.page || 1
     const limit = +req.query.limit || process.env.LIMIT_PRODUCTS
     const skip = (page - 1) * limit
     queryCommand.skip(skip).limit(limit)
-    //Execute query
-    // So luong san pham thoa man dieu kien !== so luong san pham tra ve 1 lan goi API
     queryCommand.then(async (response) => {
         const counts = await Order.find(qr).countDocuments()
         return res.status(200).json({
@@ -102,10 +91,40 @@ const getUserOrder = asyncHandler(async (req, res) => {
 })
 const getUserOrderByAdmin = asyncHandler(async (req, res) => {
     const { _id } = req.user
-    const response = await Order.find({ orderBy: _id })
-    return res.json({
-        success: response ? true : false,
-        response: response ? response : 'Somethings went wrong'
+    const queries = { ...req.query }
+    const excludeFields = ['limit', 'sort', 'page', 'fields']
+    excludeFields.forEach(el => delete queries[el])
+    let queryString = JSON.stringify(queries)
+    queryString = queryString.replace(/\b(gte|gt|lt|lte)\b/g, matchedEl => `$${matchedEl}`)
+    const formatQueries = JSON.parse(queryString)
+    const qr = {
+        // ...colorQueryObj,
+        ...formatQueries,
+        orderBy: _id,
+        // ...queryObject
+    }
+    let queryCommand = Order.find(qr)
+    if (req.query.sort) {
+        const sortBy = req.query.sort.split(',').join(' ')
+        queryCommand = queryCommand.sort(sortBy)
+    }
+    if (req.query.fields) {
+        const fields = req.query.fields.split(',').join(' ')
+        queryCommand = queryCommand.select(fields)
+    }
+    const page = +req.query.page || 1
+    const limit = +req.query.limit || process.env.LIMIT_PRODUCTS
+    const skip = (page - 1) * limit
+    queryCommand.skip(skip).limit(limit)
+    queryCommand.then(async (response) => {
+        const counts = await Order.find(qr).countDocuments()
+        return res.status(200).json({
+            success: response ? true : false,
+            counts,
+            orders: response ? response : 'Somethings went wrong',
+        })
+    }).catch((err) => {
+        if (err) throw new Error(err.message)
     })
 })
 module.exports = {
