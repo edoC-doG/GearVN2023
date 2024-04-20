@@ -19,8 +19,9 @@ router.get('/current', verifyAccessToken, ctrls.getCurrentUser)
 router.put('/current', verifyAccessToken, uploader.single('avatar'), ctrls.updateUser)
 router.put('/address', [verifyAccessToken], ctrls.updateUserAdd)
 router.put('/cart', verifyAccessToken, ctrls.updateCartAdd)
-router.delete('/:uid', [verifyAccessToken, isAdmin], ctrls.deleteUser)
 router.get('/', [verifyAccessToken, isAdmin], ctrls.getUsers)
+router.delete('/:uid', [verifyAccessToken, isAdmin], ctrls.deleteUser)
+router.put('/wish-list/:pid', verifyAccessToken, ctrls.wishListUser)
 router.put('/:uid', [verifyAccessToken, isAdmin], ctrls.updateUserByAdmin)
 
 

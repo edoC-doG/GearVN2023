@@ -50,6 +50,7 @@ const getProducts = asyncHandler(async (req, res) => {
     //Filtering
     if (queries?.title) formatQueries.title = { $regex: queries.title, $options: 'i' }
     if (queries?.category) formatQueries.category = { $regex: queries.category, $options: 'i' }
+    if (queries?.brand) formatQueries.brand = { $regex: queries.brand, $options: 'i' }
     if (queries?.color) {
         delete formatQueries.color;
         const colorArr = queries.color?.split(',');
